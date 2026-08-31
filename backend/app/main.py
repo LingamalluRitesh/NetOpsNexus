@@ -14,6 +14,7 @@ from backend.app.websocket_manager import ws_manager
 from backend.app.rbac.service import RBACService
 from backend.app.auth.router import router as auth_router
 from backend.app.rbac.router import router as rbac_router
+from backend.app.devices.router import router as device_router, site_router
 
 logging.basicConfig(level=logging.INFO)
 logger = structlog.get_logger("netops.nexus")
@@ -84,7 +85,6 @@ async def websocket_telemetry_endpoint(websocket: WebSocket, channel: str = "all
     try:
         while True:
             data = await websocket.receive_text()
-            # Handle client subscription or ping
             if data == "ping":
                 await websocket.send_text("pong")
     except WebSocketDisconnect:
@@ -97,3 +97,5 @@ async def websocket_telemetry_endpoint(websocket: WebSocket, channel: str = "all
 # Register Core Routers
 app.include_router(auth_router, prefix=settings.API_V1_STR)
 app.include_router(rbac_router, prefix=settings.API_V1_STR)
+app.include_router(device_router, prefix=settings.API_V1_STR)
+app.include_router(site_router, prefix=settings.API_V1_STR)
