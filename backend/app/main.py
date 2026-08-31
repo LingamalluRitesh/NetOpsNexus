@@ -17,6 +17,7 @@ from backend.app.rbac.router import router as rbac_router
 from backend.app.devices.router import router as device_router, site_router
 from backend.app.discovery.router import router as discovery_router
 from backend.app.topology.router import router as topology_router
+from backend.app.monitoring.router import router as monitoring_router
 
 logging.basicConfig(level=logging.INFO)
 logger = structlog.get_logger("netops.nexus")
@@ -103,3 +104,4 @@ app.include_router(device_router, prefix=settings.API_V1_STR)
 app.include_router(site_router, prefix=settings.API_V1_STR)
 app.include_router(discovery_router, prefix=settings.API_V1_STR)
 app.include_router(topology_router, prefix=settings.API_V1_STR)
+app.include_router(monitoring_router, prefix=settings.API_V1_STR)
