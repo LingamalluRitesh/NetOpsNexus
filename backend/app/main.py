@@ -23,6 +23,8 @@ from backend.app.configurations.router import router as config_router
 from backend.app.automation.router import router as automation_router
 from backend.app.incidents.router import router as incident_router
 from backend.app.alerts.router import router as alert_router
+from backend.app.security.router import router as security_router
+from backend.app.traffic.router import router as traffic_router
 
 logging.basicConfig(level=logging.INFO)
 logger = structlog.get_logger("netops.nexus")
@@ -115,3 +117,5 @@ app.include_router(config_router, prefix=settings.API_V1_STR)
 app.include_router(automation_router, prefix=settings.API_V1_STR)
 app.include_router(incident_router, prefix=settings.API_V1_STR)
 app.include_router(alert_router, prefix=settings.API_V1_STR)
+app.include_router(security_router, prefix=settings.API_V1_STR)
+app.include_router(traffic_router, prefix=settings.API_V1_STR)
