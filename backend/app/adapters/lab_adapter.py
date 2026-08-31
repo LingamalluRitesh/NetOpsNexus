@@ -476,7 +476,15 @@ class LabNetworkAdapter:
         start = time.time()
         cmd = command.strip().lower()
         
-        if "show running-config" in cmd:
+        if "show version" in cmd or "show ver" in cmd:
+            output = (
+                f"{self.state.vendor} IOS-XE Software, Version {self.state.os_version}\n"
+                f"{self.state.hostname} uptime is 14 weeks, 2 days, 4 hours\n"
+                f"System image file is \"bootflash:packages.conf\"\n"
+                f"cisco {self.state.model} processor with 16777216K bytes of physical memory.\n"
+                f"Processor board ID {self.state.mac_address}\n"
+            )
+        elif "show running-config" in cmd:
             output = self.state.running_config
         elif "show ip interface brief" in cmd or "show int brief" in cmd:
             lines = ["Interface                  IP-Address      OK? Method Status                Protocol"]
