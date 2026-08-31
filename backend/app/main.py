@@ -20,6 +20,7 @@ from backend.app.topology.router import router as topology_router
 from backend.app.monitoring.router import router as monitoring_router
 from backend.app.ipam.router import router as ipam_router
 from backend.app.configurations.router import router as config_router
+from backend.app.automation.router import router as automation_router
 
 logging.basicConfig(level=logging.INFO)
 logger = structlog.get_logger("netops.nexus")
@@ -109,3 +110,4 @@ app.include_router(topology_router, prefix=settings.API_V1_STR)
 app.include_router(monitoring_router, prefix=settings.API_V1_STR)
 app.include_router(ipam_router, prefix=settings.API_V1_STR)
 app.include_router(config_router, prefix=settings.API_V1_STR)
+app.include_router(automation_router, prefix=settings.API_V1_STR)
