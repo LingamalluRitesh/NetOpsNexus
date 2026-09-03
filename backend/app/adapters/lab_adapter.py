@@ -388,7 +388,8 @@ class LabNetworkAdapter:
     async def get_interfaces(self) -> List[AdapterInterfaceInfo]:
         results = []
         hour = (datetime.now(timezone.utc).hour) % 24
-        diurnal_factor = 0.3 + 0.7 * math.sin(math.pi * (hour - 6) / 12)
+        # Positive diurnal curve: peak at midday, lower at night, minimum 0.15
+        diurnal_factor = max(0.15, 0.2 + 0.8 * ((math.sin(math.pi * (hour - 6) / 12) + 1.0) / 2.0))
 
         for i, iface in enumerate(self.state.interfaces, start=1):
             speed_mbps = iface.get("speed", 1000)

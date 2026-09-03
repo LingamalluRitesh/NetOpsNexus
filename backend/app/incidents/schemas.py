@@ -3,7 +3,7 @@ Pydantic schemas for Incident Management, Events, Runbooks, and MTTR Analytics.
 """
 
 from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field, ConfigDict
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 from datetime import datetime
 from backend.app.incidents.models import IncidentSeverity, IncidentPriority, IncidentStatus
 
@@ -13,6 +13,13 @@ class RunbookBase(BaseModel):
     description: str
     steps: List[Dict[str, Any]] = []
     is_automated: bool = False
+
+    @field_validator("title")
+    @classmethod
+    def validate_title_not_blank(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Title cannot be empty or whitespace only.")
+        return v.strip()
 
 
 class RunbookCreate(RunbookBase):
@@ -40,6 +47,13 @@ class IncidentEventCreate(BaseModel):
     event_type: str = "comment"
     message: str = Field(..., min_length=1)
 
+    @field_validator("message")
+    @classmethod
+    def validate_message_not_blank(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Message cannot be empty or whitespace only.")
+        return v.strip()
+
 
 class IncidentBase(BaseModel):
     title: str = Field(..., min_length=2, max_length=255)
@@ -50,6 +64,13 @@ class IncidentBase(BaseModel):
     assigned_to_id: Optional[int] = None
     affected_device_id: Optional[int] = None
     runbook_id: Optional[int] = None
+
+    @field_validator("title")
+    @classmethod
+    def validate_title_not_blank(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Title cannot be empty or whitespace only.")
+        return v.strip()
 
 
 class IncidentCreate(IncidentBase):
@@ -79,10 +100,17 @@ class IncidentResponse(IncidentBase):
 
 
 class RcaGenerateRequest(BaseModel):
-    root_cause_summary: str
-    impacted_services: List[str]
-    preventative_actions: List[str]
-    remediation_steps_taken: List[str]
+    root_cause_summary: str = Field(..., min_length=5)
+    impacted_services: List[str] = []
+    preventative_actions: List[str] = []
+    remediation_steps_taken: List[str] = []
+
+    @field_validator("root_cause_summary")
+    @classmethod
+    def validate_summary_not_blank(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Root cause summary cannot be empty or whitespace only.")
+        return v.strip()
 
 
 class MttrAnalyticsResponse(BaseModel):
