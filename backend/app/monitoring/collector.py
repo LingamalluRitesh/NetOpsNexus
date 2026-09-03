@@ -111,11 +111,22 @@ class TelemetryCollector:
 
     @staticmethod
     async def run_poll_cycle():
-        """Poll all active devices in inventory."""
+        """Poll all active devices in inventory with isolated sessions and bounded concurrency."""
         async with AsyncSessionLocal() as session:
-            stmt = select(Device).options(selectinload(Device.interfaces)).where(Device.is_managed == True)
+            stmt = select(Device.id).where(Device.is_managed == True)
             res = await session.execute(stmt)
-            devices = res.scalars().all()
+            device_ids = res.scalars().all()
 
-            tasks = [TelemetryCollector.collect_single_device(session, dev) for dev in devices]
-            await asyncio.gather(*tasks, return_exceptions=True)
+        semaphore = asyncio.Semaphore(10)
+
+        async def worker(dev_id: int):
+            async with semaphore:
+                async with AsyncSessionLocal() as worker_session:
+                    dev_stmt = select(Device).options(selectinload(Device.interfaces)).where(Device.id == dev_id)
+                    dev_res = await worker_session.execute(dev_stmt)
+                    dev = dev_res.scalar_one_or_none()
+                    if dev:
+                        await TelemetryCollector.collect_single_device(worker_session, dev)
+
+        tasks = [worker(did) for did in device_ids]
+        await asyncio.gather(*tasks, return_exceptions=True)

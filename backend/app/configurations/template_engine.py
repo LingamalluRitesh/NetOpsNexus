@@ -19,10 +19,40 @@ class ConfigTemplateEngine:
     def render_template(self, template_text: str, variables: Dict[str, Any]) -> TemplateRenderResponse:
         """Render template with supplied parameters and validate output syntax."""
         errors = []
+        if not template_text or not template_text.strip():
+            return TemplateRenderResponse(
+                rendered_config="",
+                variables_used=variables,
+                syntax_valid=False,
+                errors=["Template text cannot be empty or whitespace only."],
+            )
+
         try:
             template = self.env.from_string(template_text)
-            rendered = template.render(**variables)
+            rendered = template.render(**variables).strip()
             
+            if not rendered:
+                return TemplateRenderResponse(
+                    rendered_config="",
+                    variables_used=variables,
+                    syntax_valid=False,
+                    errors=["Rendered configuration evaluated to an empty payload."],
+                )
+
+            # Normalize multi-line excess blanks
+            lines = [line.rstrip() for line in rendered.splitlines()]
+            cleaned_lines = []
+            prev_empty = False
+            for line in lines:
+                if not line:
+                    if not prev_empty:
+                        cleaned_lines.append("")
+                    prev_empty = True
+                else:
+                    cleaned_lines.append(line)
+                    prev_empty = False
+            rendered = "\n".join(cleaned_lines)
+
             # Basic network CLI syntax validations
             if "interface" in rendered and not any(k in rendered for k in ["no shutdown", "shutdown", "switchport", "ip address"]):
                 errors.append("Warning: Interface configuration block has no action commands specified")

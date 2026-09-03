@@ -139,14 +139,19 @@ class IncidentService:
     async def generate_rca(db: AsyncSession, incident_id: int, req: RcaGenerateRequest) -> Dict[str, Any]:
         """Generate structured Root Cause Analysis (RCA) post-incident document."""
         inc = await IncidentService.get_incident(db, incident_id)
+        
+        summary = (req.root_cause_summary or "").strip()
+        if not summary:
+            raise HTTPException(status_code=400, detail="Root cause summary cannot be empty or whitespace only.")
+
         rca_payload = {
             "incident_id": inc.id,
             "title": inc.title,
             "severity": inc.severity.value,
-            "root_cause_summary": req.root_cause_summary,
-            "impacted_services": req.impacted_services,
-            "remediation_steps_taken": req.remediation_steps_taken,
-            "preventative_actions": req.preventative_actions,
+            "root_cause_summary": summary,
+            "impacted_services": [s.strip() for s in (req.impacted_services or []) if s and s.strip()],
+            "remediation_steps_taken": [s.strip() for s in (req.remediation_steps_taken or []) if s and s.strip()],
+            "preventative_actions": [s.strip() for s in (req.preventative_actions or []) if s and s.strip()],
             "mttr_minutes": (inc.mttr_seconds or 0) // 60,
             "generated_at": datetime.now(timezone.utc).isoformat(),
         }

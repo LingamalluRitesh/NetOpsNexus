@@ -35,10 +35,18 @@ def test_cis_benchmark_auditor():
     hardened_cfg = """
     hostname RTR-SEC-01
     aaa new-model
+    aaa authentication login default group tacacs+ local
+    aaa authorization exec default group tacacs+ local
     service password-encryption
+    ip ssh version 2
+    control-plane
+     service-policy input COPP-POLICY
+    ip dhcp snooping
     line vty 0 4
      transport input ssh
+     access-class MGMT-IN in
     logging host 10.100.0.50
+    service timestamps log datetime msec
     ntp server 10.100.0.100
     """
     score, findings = CisBenchmarkAuditor.audit_cisco_config(hardened_cfg)
